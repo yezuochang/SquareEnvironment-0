@@ -1,31 +1,38 @@
 import numpy as np
 import gym
 from gym import spaces
-
+from copy import deepcopy
 class Env(object):
     def __init__(self):
         self.action_shape = [1, ]
         self.observation_shape = [1, ]
-        self.action_space = spaces.Box(-10, 10, shape=self.observation_shape)
+        self.action_space = spaces.Box(-0.1, 0.1, shape=self.observation_shape)
         self.observation_space = spaces.Box(0, 1e6, shape=self.action_shape)
         self._seed = 0
-        self.status = np.random.random(self.action_shape)
         self.action = self.action_space.sample()
         self.reward = 0
-        self.loss = self.foo(self.status)
+        self.reset()
 
     def foo(self, x):
-        return np.sum(np.power(x, 2) + 2 * x + 5) - 4
+        y = self.coefs[0]*np.power(x[0], 2) + self.coefs[1] * x[0] + self.coefs[2]
+        return y
 
     def reset(self):
-        self.status = np.random.random(1)
+        print('\n\n--------------------------------------------------------------------------------')
+        self.coefs = np.random.rand(3)*10
+        self.status = np.random.random(1)*10
+        self.init_status = deepcopy(self.status)
+        self.loss = self.foo(self.status)
+        self.nb_step = 0
+
+        # print('init_loss = ', self.loss)
         return self.observe()
 
     def seed(self, _int):
         np.random.seed(_int)
 
     def observe(self):
-        return np.array(self.foo(self.status)).reshape(self.observation_shape)
+        return np.array(self.status)
 
     def step(self, action):
         """
@@ -37,20 +44,24 @@ class Env(object):
             done (bool): whether to reset environment or not
             info (dict): for debug only
         """
+        self.nb_step += 1
         self.status += action
         self.action = action
         observation = self.observe()
         tmp = self.foo(self.status)
         self.reward = self.loss - tmp
         self.loss = tmp
-        self.reward += self.loss - self.foo(self.status)
-        self.loss = self.foo(self.status)
-        done = self.loss <= 1e-4 or self.loss > 1e10
+        done = np.abs(action[0]) < 1e-3 or self.loss > 100 or self.nb_step >= 20
         info = {}
         return observation, self.reward, done, info
 
     def render(self, mode='human', close=False):
-        print('\nreward: ', self.reward)
+        print('\n\ninit: ', self.init_status)
+        print('reward: ', self.reward)
         print('status: ', self.status)
         print('action: ', self.action)
         print('loss: ', self.loss)
+        print('solution', self.solution())
+
+    def solution(self):
+        return -self.coefs[1]/self.coefs[0]/2.0
