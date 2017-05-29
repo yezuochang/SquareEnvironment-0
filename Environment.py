@@ -49,7 +49,7 @@ class Env(object):
         self.action = action
         observation = self.observe()
         tmp = self.foo(self.status)
-        self.reward = self.loss - tmp
+        self.reward = self.loss - tmp - 1
         self.loss = tmp
         done = np.abs(action[0]) < 1e-3 or self.loss > 100 or self.nb_step >= 20
         info = {}
