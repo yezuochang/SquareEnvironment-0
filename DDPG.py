@@ -17,7 +17,7 @@ gym.undo_logger_setup()
 
 
 # Get the environment and extract the number of actions.
-env = gym.make(ENV_NAME)
+# env = gym.make(ENV_NAME)
 env = Env()
 
 np.random.seed(123)

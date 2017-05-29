@@ -40,14 +40,11 @@ class Env(object):
         self.status += action
         self.action = action
         observation = self.observe()
-<<<<<<< HEAD
         tmp = self.foo(self.status)
         self.reward = self.loss - tmp
         self.loss = tmp
-=======
         self.reward += self.loss - self.foo(self.status)
         self.loss = self.foo(self.status)
->>>>>>> 303c5148fd20a965af6f18b09d23e27dd4d4cbd6
         done = self.loss <= 1e-4 or self.loss > 1e10
         info = {}
         return observation, self.reward, done, info
