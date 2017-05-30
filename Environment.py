@@ -5,9 +5,9 @@ from copy import deepcopy
 class Env(object):
     def __init__(self):
         self.action_shape = [1, ]
-        self.observation_shape = [1, ]
-        self.action_space = spaces.Box(-0.1, 0.1, shape=self.observation_shape)
-        self.observation_space = spaces.Box(0, 1e6, shape=self.action_shape)
+        self.observation_shape = [4, ]
+        self.action_space = spaces.Box(-0.1, 0.1, shape=self.action_shape)
+        self.observation_space = spaces.Box(-0.1, 0.1, shape=self.observation_shape)
         self._seed = 0
         self.action = self.action_space.sample()
         self.reward = 0
@@ -18,7 +18,7 @@ class Env(object):
         return y
 
     def reset(self):
-        print('\n\n--------------------------------------------------------------------------------')
+        # print('\n\n--------------------------------------------------------------------------------')
         self.coefs = np.random.rand(3)*10
         self.status = np.random.random(1)*10
         self.init_status = deepcopy(self.status)
@@ -32,7 +32,7 @@ class Env(object):
         np.random.seed(_int)
 
     def observe(self):
-        return np.array(self.status)
+        return np.concatenate([self.coefs, np.array(self.status)])
 
     def step(self, action):
         """
@@ -44,23 +44,25 @@ class Env(object):
             done (bool): whether to reset environment or not
             info (dict): for debug only
         """
+        # print(self.status, action)
         self.nb_step += 1
         self.status += action
         self.action = action
         observation = self.observe()
         tmp = self.foo(self.status)
-        self.reward = self.loss - tmp - 1
+        self.reward = self.loss - tmp - 0.1
         self.loss = tmp
-        done = np.abs(action[0]) < 1e-3 or self.loss > 100 or self.nb_step >= 20
+        done = np.abs(action[0]) < 1e-2 or self.loss > 10000 or self.nb_step >= 20
         info = {}
         return observation, self.reward, done, info
 
     def render(self, mode='human', close=False):
         print('\n\ninit: ', self.init_status)
+        print('coefs: ', self.coefs)
         print('reward: ', self.reward)
-        print('status: ', self.status)
         print('action: ', self.action)
         print('loss: ', self.loss)
+        print('status: ', self.status)
         print('solution', self.solution())
 
     def solution(self):
