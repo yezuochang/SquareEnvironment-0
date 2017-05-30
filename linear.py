@@ -20,28 +20,25 @@ env.seed(123)
 assert len(env.action_space.shape) == 1
 nb_actions = env.action_space.shape[0]
 
-actor_depth = 4
-actor_width = 32
-
-critic_depth = 6
-critic_width = 64
+depth = 4
+width = 32
 
 # Next, we build a very simple model.
 actor = Sequential()
 actor.add(Flatten(input_shape=(1,) + env.observation_space.shape))
-for k in range(actor_depth):
-    actor.add(Dense(actor_width))
-    actor.add(Activation('relu'))
+# for k in range(depth):
+#     actor.add(Dense(width))
+#     actor.add(Activation('relu'))
 actor.add(Dense(nb_actions))
-actor.add(Activation('linear'))
+# actor.add(Activation('linear'))
 print(actor.summary())
 
 action_input = Input(shape=(nb_actions,), name='action_input')
 observation_input = Input(shape=(1,) + env.observation_space.shape, name='observation_input')
 flattened_observation = Flatten()(observation_input)
 x = merge([action_input, flattened_observation], mode='concat')
-for k in range(critic_depth):
-    x = Dense(critic_width)(x)
+for k in range(depth):
+    x = Dense(width)(x)
     x = Activation('relu')(x)
 x = Dense(1)(x)
 x = Activation('linear')(x)
@@ -55,7 +52,7 @@ random_process = OrnsteinUhlenbeckProcess(size=nb_actions, theta=.15, mu=0., sig
 agent = DDPGAgent(nb_actions=nb_actions, actor=actor, critic=critic,
                   critic_action_input=action_input,
                   memory=memory, nb_steps_warmup_critic=100, nb_steps_warmup_actor=100,
-                  random_process=random_process, gamma=0,
+                  random_process=random_process, gamma=0.7,
                   target_model_update=100, #1e-3,
                   delta_clip=10)
 agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
