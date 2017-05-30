@@ -64,6 +64,7 @@ agent.compile(Adam(lr=.001, clipnorm=1.), metrics=['mae'])
 # Okay, now it's time to learn something! We visualize the training here for show, but this
 # slows down training quite a lot. You can always safely abort the training prematurely using
 # Ctrl + C.
+agent.load_weights('sq_{}_weights.h5f'.format(ENV_NAME))
 agent.fit(env, nb_steps=1000000, visualize=False, verbose=1, nb_max_episode_steps=20)
 
 # After training is done, we save the final weights.
